@@ -43,7 +43,7 @@ StreamElements normalizes these events across platforms.
 │   └── overlay.js        Core danmaku engine
 │
 ├── dev
-│   ├── index.html        Local dev playground
+│   ├── dev.html        Local dev playground
 │   ├── dev.css           Dev-only UI styles
 │   └── dev.js            Event simulation and controls
 │
