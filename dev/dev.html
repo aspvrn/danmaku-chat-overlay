@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Overlay Dev Lab</title>
+
+  <!-- Load REAL overlay styles -->
+  <link rel="stylesheet" href="../src/overlay.css">
+
+  <!-- Load dev-only styles -->
+  <link rel="stylesheet" href="./dev.css">
+</head>
+<body>
+
+  <!-- REAL overlay -->
+  <div id="stage"></div>
+
+  <!-- Dev-only controls -->
+  <div id="controls">
+    <h2>Dev Controls</h2>
+
+    <div class="section">
+      <label class="toggle">
+        <input type="checkbox" id="toggleDev" checked />
+        <span>Simulate Chat</span>
+      </label>
+    </div>
+
+    <div class="section">
+      <label>
+        Lane Gap
+        <input type="range" id="laneGap" min="12" max="128" value="48">
+      </label>
+
+      <label>
+        Delay
+        <input type="range" id="delay" min="100" max="2000" value="1200" />
+      </label>
+
+      <label>
+        Font Size
+        <input type="range" id="fontSize" min="16" max="64" value="28" />
+      </label>
+      
+      <label>
+        Speed
+        <input type="range" id="baseSpeed" min="100" max="400" step="10" value="220">
+      </label>
+
+    </div>
+
+    <div class="section buttons">
+      <button id="dev-chat">Simulate Chat</button>
+      <button id="dev-sub">Simulate Sub</button>
+      <button id="dev-gift-1">Gift 1 Sub</button>
+
+      <!-- Gift X subs (single control) -->
+      <button id="dev-gift-bulk" class="gift-x">
+        Gift
+        <input
+          type="number"
+          id="dev-gift-count"
+          min="1"
+          value="10"
+        />
+        Subs
+      </button>
+
+      <button id="dev-tip-10">Tip $10</button>
+      <button id="dev-tip-50">Tip $50</button>
+
+      <button id="dev-tip-custom" class="tip-x">
+        Tip
+        <input
+          type="number"
+          id="dev-tip-ammount"
+          min="1"
+          value="100"
+        />$
+      </button>
+
+      <button id="dev-superchat">Super Chat</button>
+      <button id="dev-spam">Spam 10 Chats</button>
+    </div>
+  </div>
+
+  <!-- Load REAL overlay logic -->
+  <script src="../src/overlay.js"></script>
+
+  <!-- Load dev-only logic -->
+  <script src="dev.js"></script>
+</body>
+</html>

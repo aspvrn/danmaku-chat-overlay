@@ -1,0 +1,109 @@
+:root {
+  /* Typography */
+  --font-size: 24px;
+  --font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-weight: 700;
+  --line-height: 1.1;
+
+  /* Text effects */
+  --stroke-width: 4px;
+  --stroke-color: rgba(0, 0, 0, 1);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+
+  /* Spacing */
+  --padding-x: 18px;
+  --padding-y: 10px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+/* ───────── Movement Shell ───────── */
+.danmaku {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  font-size: calc(var(--font-size) * var(--scale));
+
+  z-index: 1;
+  will-change: transform;
+}
+
+/* ───────── Visual Shell ───────── */
+.danmaku-inner {
+  --scale: 1;
+
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
+  line-height: var(--line-height);
+
+  color: white;
+  text-shadow: var(--shadow);
+  -webkit-text-stroke: var(--stroke-width) var(--stroke-color);
+  paint-order: stroke fill;
+
+  padding: var(--padding-y) var(--padding-x);
+
+  transform: scale(var(--scale, 1));
+  transform-origin: left center;
+}
+
+/* Name + message */
+.danmaku .name {
+  margin-right: 12px;
+}
+
+.danmaku .msg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  white-space: nowrap;
+}
+
+/* Highlighted monetary amounts */
+.danmaku .amount {
+  font-weight: 700;
+  color: #6bff9a;
+  text-shadow:
+    0 0 6px rgba(107, 255, 154, 0.6),
+    0 0 12px rgba(107, 255, 154, 0.4);
+}
+
+/* Event priority */
+.danmaku[data-type="sub"],
+.danmaku[data-type="gifted_sub"],
+.danmaku[data-type="donation"],
+.danmaku[data-type="tip"] {
+  z-index: 100;
+}
+
+
+/* ───────── Fly animation (movement only) ───────── */
+@keyframes fly {
+  from {
+    transform: translate3d(var(--start-x), var(--y), 0);
+  }
+  to {
+    transform: translate3d(var(--end-x), var(--y), 0);
+  }
+}

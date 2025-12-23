@@ -1,0 +1,41 @@
+{
+  "devMode": {
+    "type": "checkbox",
+    "label": "Simulate Chat",
+    "value": true
+  },
+  "devDelay": {
+    "type": "slider",
+    "label": "Simulated Chat Delay (ms)",
+    "value": 1000,
+    "min": 100,
+    "max": 2000,
+    "step": 100
+  },
+  "fontSize": {
+    "type": "slider",
+    "label": "Font Size (px)",
+    "min": 16,
+    "max": 128,
+    "value": 24
+  },
+  "laneGap": {
+    "type": "slider",
+    "label": "Lane Gap (px)",
+    "min": 16,
+    "max": 256,
+    "value": 36
+  },
+  "strokeWidth": {
+    "type": "slider",
+    "label": "Stroke Width",
+    "min": 0,
+    "max": 16,
+    "value": 4
+  },
+  "strokeColor": {
+    "type": "colorpicker",
+    "label": "Stroke Color",
+    "value": "rgba(0, 0, 0, 0)"
+  }
+}

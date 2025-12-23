@@ -1,0 +1,104 @@
+/* Reset-ish */
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+#controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+
+  padding: 16px;
+  background: rgba(15, 15, 18, 0.95);
+  color: #fff;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  border-right: 1px solid rgba(255,255,255,0.08);
+  z-index: 9999;
+}
+
+#controls h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Labels & sliders */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+/* Toggle */
+.toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* Buttons */
+.buttons {
+  gap: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 8px 10px;
+  background: #222;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button:hover {
+  background: #2c2c2c;
+}
+
+/* Gift X Subs special button */
+button.gift-x, button.tip-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Inline number input inside button */
+button.gift-x input, button.tip-x input {
+  width: 48px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255,255,255,0.5);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  outline: none;
+  padding: 2px 0;
+}
+
+button.gift-x input:focus, button.tip-x input:focus {
+  border-bottom-color: #9d7bff; /* subtle purple highlight */
+}
