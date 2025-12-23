@@ -35,6 +35,7 @@ StreamElements normalizes these events across platforms.
 
 ## Project Structure
 
+```
 .
 ├── src
 │   ├── overlay.html      StreamElements widget HTML
@@ -48,7 +49,7 @@ StreamElements normalizes these events across platforms.
 │
 ├── README.md
 └── .gitignore
-
+```
 ---
 
 ## Usage (StreamElements)
