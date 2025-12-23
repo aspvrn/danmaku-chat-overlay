@@ -80,8 +80,22 @@ body {
   white-space: nowrap;
 }
 
-/* Highlighted monetary amounts */
-.danmaku .amount {
+.danmaku .msg:empty {
+  display: none;
+}
+
+/* Purple Sub */
+.danmaku[data-type="gifted_sub"] .name,
+.danmaku[data-type="gifted_sub"] .amount {
+  color: rgba(180, 100, 255, 1);
+  text-shadow:
+    0 0 6px rgba(180,100,255,.6),
+    0 0 14px rgba(180,100,255,.4);
+}
+
+/* Green Donos */
+.danmaku[data-type="donation"] .amount,
+.danmaku[data-type="tip"] .amount {
   font-weight: 700;
   color: #6bff9a;
   text-shadow:
@@ -89,11 +103,37 @@ body {
     0 0 12px rgba(107, 255, 154, 0.4);
 }
 
+/* Red Raid */
+.danmaku[data-type="raid"] .name {
+  font-weight: 700;
+  color: #ff3b3b;
+  text-shadow:
+    0 0 6px rgba(255, 59, 59, 0.7),
+    0 0 14px rgba(255, 59, 59, 0.5);
+}
+
+/* Blue Cheer */
+.danmaku[data-type="cheer"] .name {
+  color: #4aa3ff;
+  text-shadow:
+    0 0 6px rgba(74, 163, 255, 0.6),
+    0 0 14px rgba(74, 163, 255, 0.4);
+}
+
+.danmaku[data-type="cheer"] .amount {
+  color: #7cc7ff;
+  text-shadow:
+    0 0 6px rgba(124, 199, 255, 0.6),
+    0 0 12px rgba(124, 199, 255, 0.4);
+}
+
+
 /* Event priority */
 .danmaku[data-type="sub"],
 .danmaku[data-type="gifted_sub"],
 .danmaku[data-type="donation"],
-.danmaku[data-type="tip"] {
+.danmaku[data-type="tip"],
+.danmaku[data-type="raid"] {
   z-index: 100;
 }
 

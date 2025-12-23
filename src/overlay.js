@@ -60,8 +60,6 @@ function speedVariation(percent) {
   return 1 + (Math.random() * (p * 2) - p);
 }
 
-
-
 window.addEventListener("resize", computeLanes);
 computeLanes();
 
@@ -71,12 +69,8 @@ computeLanes();
 
 
 
-
-
-
-
 // /**
-//  * PUBLIC API ///////////////////////////////////////////////////////////////////////////////////////
+//  * PUBLIC API ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  */
 function addDanmaku({ name, text, content, type = "chat", color, scale = 1 }) {
 
@@ -91,7 +85,7 @@ function addDanmaku({ name, text, content, type = "chat", color, scale = 1 }) {
   if (++countThisSecond > CONFIG.rateLimitPerSec) return;
 
   // Allow text OR structured content
-  if (!text && !(content instanceof Node)) return;
+  if (text == null && !(content instanceof Node)) return;
 
   const cleanName = (name ?? "Anonymous").toString().slice(0, 32);
 
@@ -117,7 +111,7 @@ function addDanmaku({ name, text, content, type = "chat", color, scale = 1 }) {
 
   const nameSpan = document.createElement("span");
   nameSpan.className = "name";
-  nameSpan.textContent = cleanName + ":";
+  nameSpan.textContent = cleanName;
 
   const msgSpan = document.createElement("span");
   msgSpan.className = "msg";
@@ -218,104 +212,51 @@ function addDanmaku({ name, text, content, type = "chat", color, scale = 1 }) {
 
 }
 
-
-
-// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 window.addDanmaku = addDanmaku;
 
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
+// EVENT LOGGER (DEV USE ONLY)
+window.addEventListener("onEventReceived", (obj) => {
+  const evt = obj?.detail?.event;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  console.group("STREAM ELEMENTS EVENT");
+  // console.log("EVENT DETAIL:", obj?.detail);
+  console.log("LISTENER:", obj?.detail?.listener);
+  console.log("TYPE:", evt?.type);
+  console.log("DATA:", evt?.data);
+  console.groupEnd();
+});
 
 
 
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// // EVENT LOGGER (DEV USE ONLY)
-// window.addEventListener("onEventReceived", (obj) => {
-//   const evt = obj?.detail?.event;
-
-//   console.group("STREAM ELEMENTS EVENT");
-//   console.log("RAW EVENT:", evt);
-//   console.log("LISTENER:", evt?.listener);
-//   console.log("TYPE:", evt?.type);
-//   console.log("DATA:", evt?.data);
-//   console.groupEnd();
-// });
-
-
-
 //  EVENT LISTENER
 window.addEventListener("onEventReceived", (obj) => {
-  const detail = obj.detail;
-  if (!detail) return;
+  const d = obj.detail;
+  if (!d || !d.event || d.listener != "event") return;
 
-  const listener = detail.listener;
-  const evt = detail.event || {};
-
-  // ───────── Chat messages ─────────
-  if (listener === "message") {
-    const data = evt.data;
-    if (!data) return;
-
+  // Normalize chat
+  if (d.listener === "message") {
     detectEvent({
       type: "message",
-      data: {
-        displayName: data.displayName,
-        text: data.text,
-        userId: data.userId,
-        msgId: data.msgId
-      }
+      data: d.event.data
     });
-
     return;
   }
 
-  // ───────── Non-chat events ─────────
-  detectEvent(evt);
+  // Everything else already has evt.type
+  detectEvent(d.event);
 });
 
-//  EVENT IDENTIFIER
-function getEventKind(evt) {
-  // Prefer originalEventName if present
-  if (evt.originalEventName) return evt.originalEventName;
 
-  // Fall back to type
-  return evt.type;
-}
-
-
-//  EVENT HANDLER
+//  EVENT MANAGER
 function detectEvent(evt) {
-  const kind = getEventKind(evt);
+  const kind = evt.type;
 
   switch (kind) {
     case "message":
@@ -324,7 +265,11 @@ function detectEvent(evt) {
 
     case "sponsor":
     case "subscriber":
-      handleSponsor(evt);
+      handleSub(evt);
+      break;
+
+    case "communityGiftPurchase":
+      handleCommunityGift(evt);
       break;
 
     case "tip":
@@ -334,6 +279,14 @@ function detectEvent(evt) {
     case "superchat":
       handleSuperChat(evt);
       break;
+
+    case "raid":
+      handleRaid(evt);
+      break;
+    
+    case "cheer":
+      handleCheer(evt);
+      break
 
     default:
       // ignore
@@ -388,6 +341,37 @@ function donationScale(amount) {
 }
 
 
+// RAID SCALING
+function raidScale(viewers) {
+  if (!viewers || viewers <= 0) return 1.2;
+
+  // Clamp to avoid insanity
+  const capped = Math.min(viewers, 500);
+
+  // Smooth growth
+  return 1.2 + Math.log10(capped) * 0.8;
+}
+
+
+// CHEER SCALING
+function cheerScale(bits) {
+  if (!bits || bits <= 0) return 1;
+
+  const capped = Math.min(bits, 10000);
+  return 1 + Math.log10(capped) * 0.7;
+}
+
+
+// Gift Scaling
+function giftScale(count) {
+  if (!count || count <= 1) return 1.2;
+
+  const capped = Math.min(count, 100);
+  return 1.2 + Math.log10(capped) * 1.1;
+}
+
+
+
 
 // EVENTS
 // message
@@ -405,25 +389,30 @@ function handleChat(evt) {
 
 
 // Subs
-function handleSponsor(evt) {
-  const d = evt.data || {};
-  const name = pickName(evt);
+function handleSub(evt) {
+  const d = evt.data;
+  if (!d) return;
 
+  // Gifted sub recipient
   if (d.gifted) {
     addDanmaku({
-      name: d.sender || name,   // gifter
-      text: "gifted a membership!",
-      type: "gifted_sub"
+      name: d.displayName,
+      content: document.createTextNode(""),
+      type: "gifted_sub",
+      scale: 1
     });
     return;
   }
 
+  // ⭐ Normal sub
   addDanmaku({
-    name,
-    text: "just became a member!",
-    type: "sub"
+    name: d.displayName,
+    text: "just subscribed!",
+    type: "sub",
+    scale: 1.4
   });
 }
+
 
 
 
@@ -512,6 +501,104 @@ function handleSuperChat(evt) {
 }
 
 
+// Raids
+function handleRaid(evt) {
+  const d = evt.data || {};
+  if (!d.displayName || !d.amount) return;
+
+  const raider = d.displayName;
+  const viewers = d.amount;
+
+  // Build structured content
+  const content = document.createElement("span");
+
+  const nameEl = document.createElement("span");
+  nameEl.textContent = `${raider} `;
+
+  const textEl = document.createElement("span");
+  textEl.textContent = "is raiding with ";
+
+  const amountEl = document.createElement("span");
+  amountEl.className = "amount";
+  amountEl.textContent = `${viewers} viewers!`;
+
+  content.appendChild(nameEl);
+  content.appendChild(textEl);
+  content.appendChild(amountEl);
+
+  addDanmaku({
+    name: "RAID",
+    content,
+    type: "raid",
+    scale: raidScale(viewers)
+  });
+}
+
+
+
+function handleCheer(evt) {
+  const d = evt.data;
+  if (!d) return;
+
+  const bits = d.amount;
+  const user = d.displayName;
+  // const message = d.message?.trim();
+
+  const content = document.createElement("span");
+
+  const textEl = document.createElement("span");
+  textEl.textContent = "cheered ";
+
+  const amountEl = document.createElement("span");
+  amountEl.className = "amount";
+  amountEl.textContent = `${bits} bits`;
+
+  content.appendChild(textEl);
+  content.appendChild(amountEl);
+
+  // if (message) {
+  //   const msgEl = document.createElement("span");
+  //   msgEl.textContent = ` — ${message}`;
+  //   content.appendChild(msgEl);
+  // }
+
+  addDanmaku({
+    name: user,
+    content,
+    type: "cheer",
+    scale: cheerScale(bits)
+  });
+}
+
+
+
+function handleCommunityGift(evt) {
+  const d = evt.data;
+  if (!d || !d.displayName || !d.amount) return;
+
+  const gifter = d.displayName;
+  const count = d.amount;
+
+  const content = document.createElement("span");
+
+  const textEl = document.createElement("span");
+  textEl.textContent = "gifted ";
+
+  const amountEl = document.createElement("span");
+  amountEl.className = "amount";
+  amountEl.textContent = `${count} subscriptions!`;
+
+  content.appendChild(textEl);
+  content.appendChild(amountEl);
+
+  addDanmaku({
+    name: gifter,
+    content,
+    type: "gifted_sub",
+    scale: giftScale(count)
+  });
+}
+
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -523,51 +610,34 @@ function handleSuperChat(evt) {
 
 
 
-
-
-
-
-
-
-
 function applyStyleVars() {
-  const root = document.documentElement.style;
-
-  root.setProperty("--font-size", `${RUNTIME.fontSize}px`);
-  root.setProperty("--text-color", RUNTIME.textColor);
-  root.setProperty("--stroke-color", RUNTIME.strokeColor);
-  root.setProperty("--shadow-color", RUNTIME.shadowColor);
-  root.setProperty("--stroke-width", `${RUNTIME.strokeWidth}px`);
+  
 }
 
 let lastLaneGap = null;
-
-function applyRuntime() {
-  applyStyleVars();
-
-
-  if (RUNTIME.laneGap !== lastLaneGap) {
-    lastLaneGap = RUNTIME.laneGap;
-    computeLanes();
-  }
-
-  restartDevChat();
-}
-
 
 // widget load (fields/settings)
 window.addEventListener("onWidgetLoad", (obj) => {
   const f = obj?.detail?.fieldData;
   if (!f) return;
 
-  RUNTIME.devMode     = f.devMode;
-  RUNTIME.devDelay    = Number(f.devDelay);
-  RUNTIME.fontSize    = Number(f.fontSize);
-  RUNTIME.shadowColor = f.shadowColor;
-  RUNTIME.strokeColor = f.strokeColor;
-  RUNTIME.strokeWidth = Number(f.strokeWidth);
+  RUNTIME.devMode       = f.devMode;
+  RUNTIME.devDelay      = Number(f.devDelay);
+  RUNTIME.fontSize      = Number(f.fontSize);
+  RUNTIME.laneGap       = Number(f.laneGap);
+  RUNTIME.shadowColor   = f.shadowColor;
+  RUNTIME.strokeColor   = f.strokeColor;
+  RUNTIME.strokeWidth   = Number(f.strokeWidth);
 
-  applyRuntime();
+  const root = document.documentElement.style;
+  root.setProperty("--stroke-width",  `${RUNTIME.strokeWidth}px`);
+  root.setProperty("--font-size",     `${RUNTIME.fontSize}px`);
+  root.setProperty("--text-color",    RUNTIME.textColor);
+  root.setProperty("--stroke-color",  RUNTIME.strokeColor);
+  root.setProperty("--shadow-color",  RUNTIME.shadowColor);
+  
+  computeLanes();
+  restartDevChat();
 });
 
 
